@@ -1,0 +1,29 @@
+:root {
+   --offcanvas-width: 255px;
+   --topNavbarHeigth: 55px;
+}
+
+.sidebar-nav {
+   width: var(--offcanvas-width);
+}
+
+.table-condensed th, .table-condensed td {
+   padding-top: 0;
+   padding-bottom: 0;
+}
+
+@media (min-width: 992px) {
+   body {
+      overflow: auto !important;
+   }
+   main {
+      margin-top: var(--topNavbarHeigth);
+      margin-left: var(--offcanvas-width);
+   }
+   .sidebar-nav {
+      transform: none;
+      visibility: visible !important;
+      top: var(--topNavbarHeigth);
+      height: calc(100% - var(--topNavbarHeigth));
+   }
+}
