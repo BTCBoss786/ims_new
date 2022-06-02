@@ -1,10 +1,26 @@
 <div>
 
-    @if(date('d-m-Y') <= '31-03-2022')
-    <div class="row pt-5 pb-0">
-        <x-add-button title="New Invoice" wire:click.prevent="newInvoice"/>
+    @php
+        $now = new Carbon\Carbon();
+    @endphp
+    <div class="row pt-5 pb-3">
+        <div class="col">
+            <input type="date" id="start_date" class="form-control" value="{{ $now->firstOfMonth()->format('Y-m-d') }}">
+        </div>
+        <div class="col">
+            <input type="date" id="end_date" class="form-control" value="{{ $now->lastOfMonth()->format('Y-m-d') }}">
+        </div>
+        <div class="col">
+            <button id="summaryInvoice" class="btn btn-info">
+                <i class="fa-solid fa-download pe-1"></i>
+                Download
+            </button>
+        </div>
+
+        @if(date('d-m-Y') <= '31-03-2022')
+            <x-add-button title="New Invoice" wire:click.prevent="newInvoice"/>
+        @endif
     </div>
-    @endif
 
     <div class="row pt-0">
         <div class="col">
@@ -33,6 +49,7 @@
                             <td>@money($invoice->tax)</td>
                             <td class="text-center">
                                 <x-print-button wire:click.prevent="printInvoice({{ $invoice }})" title="Print"/>
+                                <x-delete-button wire:click.prevent="confirmDelete({{ $invoice }})" title=""/>
                             </td>
                         </tr>
                     @empty
@@ -110,7 +127,34 @@
                     'success'
                 )
                 @this.call('$refresh')
+            },
+            'deleteModal': () => {
+                Swal.fire({
+                    title: 'Are You Sure?',
+                    text: "You won't be able to recover this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Delete It!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        @this.call('deleteInvoice')
+                        @this.call('$refresh')
+                        Swal.fire(
+                            'Deleted',
+                            'Invoice Deleted Successfully',
+                            'success'
+                        )
+                    }
+                })
             }
+        })
+
+        $('#summaryInvoice').unbind('click').bind('click', function() {
+            let startDate = $('#start_date').val();
+            let endDate = $('#end_date').val();
+            @this.call('summaryInvoice', startDate, endDate)
         })
     </script>
 @endpush

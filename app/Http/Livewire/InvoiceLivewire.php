@@ -5,6 +5,7 @@ namespace App\Http\Livewire;
 use App\Models\Customer;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Validator;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,6 +17,7 @@ class InvoiceLivewire extends Component
 
     protected string $paginationTheme = 'bootstrap';
     public array $data = [];
+    public ?Invoice $invoiceId = null;
 
     public function render()
     {
@@ -67,6 +69,32 @@ class InvoiceLivewire extends Component
         ])->output();
 
         return response()->streamDownload(fn() => print($pdf), "Invoice_{$invoice->inv_ref}.pdf");
+    }
+
+    public function summaryInvoice($startDate, $endDate)
+    {
+        $invoices = Invoice::with('customer')
+                           ->whereBetween('inv_date', [$startDate, $endDate])
+                           ->get();
+
+        $pdf = Pdf::loadView('templates.summary', [
+            'startDate' => new Carbon($startDate),
+            'endDate' => new Carbon($endDate),
+            'invoices' => $invoices,
+        ])->output();
+
+        return response()->streamDownload(fn() => print($pdf), "Invoice_Summary_{$startDate}_to_{$endDate}.pdf");
+    }
+
+    public function confirmDelete(Invoice $invoice)
+    {
+        $this->invoiceId = $invoice;
+        $this->dispatchBrowserEvent('deleteModal');
+    }
+
+    public function deleteInvoice()
+    {
+        $this->invoiceId->delete();
     }
 
 }

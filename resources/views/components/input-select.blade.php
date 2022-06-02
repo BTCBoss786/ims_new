@@ -13,6 +13,8 @@
         @forelse($data as $val)
             @if($val->code)
                 <option value="{{ $val->id }}">{{ $val->code . ' - ' . $val->name }}</option>
+            @elseif($val->description)
+                <option value="{{ $val->id }}">{{ $val->name . ' - ' . $val->description }}</option>
             @else
                 <option value="{{ $val->id }}">{{ $val->name ?? ($val->rate.'%') }}</option>
             @endif
